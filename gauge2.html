@@ -1,0 +1,91 @@
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>仪表盘组件2</title>
+
+    <svg id='svgChart' viewBox="0 0 100 100" style='display:block;border:1px solid #ddd;width:400px;height:500px;margin:20px auto;'>
+        <defs>
+            <clipPath id="rectClip">
+                <path id='valueClipPath' />
+            </clipPath>
+        </defs>
+        <g id='pathG'>
+            <path id='bgPath' fill='#ddd' />
+            <g id='valuePathG' style="clip-path:url(#rectClip);"></g>
+        </g>
+    </svg>
+</head>
+<style>
+
+</style>
+
+<body>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script>
+        // 依赖库
+        let { arc } = d3;
+        // 输入值 为85%;
+        let value = 0.85;
+
+        // 默认值 
+        let R = 42, //半径
+            W = 4, //圆弧宽度
+            P = Math.PI * 2 * .75; //总弧度
+
+
+
+        let bgPathNode = document.querySelector('#bgPath'),
+            valueClipPathNode = document.querySelector('#valueClipPath'),
+            pathGNode = document.querySelector('#pathG');
+        // 总角度
+        let deg = (360 / (Math.PI * 2)) * P;
+        pathGNode.setAttribute('transform', `translate(50,50),rotate(${(360-deg)/2+180})`);
+        // 绘制默认弧
+        bgPathNode.setAttribute(
+            'd',
+            arc()
+            .cornerRadius(W / 2)
+            ({
+                outerRadius: R + W / 2,
+                innerRadius: R - W / 2,
+                startAngle: 0,
+                endAngle: P
+            })
+        );
+        // 绘制数值弧
+        arcFn = arc()
+            .outerRadius(R + W / 2 * 1.5)
+            .innerRadius(R - W / 2 * 1.5)
+        colorFn = d3.interpolateLab("yellow", "red");
+        let valuePath = d3.range(0, P * value, 0.01)
+            .map((item, index, list) => {
+                if (list[index + 1]) {
+                    let d = arcFn({
+                        startAngle: list[index],
+                        endAngle: list[index + 1] + 0.001
+                    });
+                    return `<path d='${d}' fill='${colorFn(index/(list.length-1))}'/>`;
+                }
+            }).slice(0, -1);
+
+        document.querySelector('#valuePathG').innerHTML = valuePath;
+
+
+        valueClipPathNode.setAttribute(
+            'd',
+            arc()
+            .cornerRadius(W / 2 * 1.5)
+            ({
+                outerRadius: R + W / 2 * 1.5,
+                innerRadius: R - W / 2 * 1.5,
+                startAngle: 0,
+                endAngle: P * value
+            })
+        );
+    </script>
+</body>
+
+</html>

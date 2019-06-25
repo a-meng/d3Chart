@@ -25,8 +25,6 @@
 <body>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script>
-        // 依赖库
-        let { arc } = d3;
         // 输入值 为85%;
         let value = 0.85;
 
@@ -42,11 +40,12 @@
             pathGNode = document.querySelector('#pathG');
         // 总角度
         let deg = (360 / (Math.PI * 2)) * P;
+        // 调整图形偏移
         pathGNode.setAttribute('transform', `translate(50,50),rotate(${(360-deg)/2+180})`);
-        // 绘制默认弧
+        // 更新默认弧
         bgPathNode.setAttribute(
             'd',
-            arc()
+            d3.arc()
             .cornerRadius(W / 2)
             ({
                 outerRadius: R + W / 2,
@@ -55,11 +54,13 @@
                 endAngle: P
             })
         );
-        // 绘制数值弧
-        arcFn = arc()
+        // 渐变弧函数
+        arcFn = d3.arc()
             .outerRadius(R + W / 2 * 1.5)
-            .innerRadius(R - W / 2 * 1.5)
+            .innerRadius(R - W / 2 * 1.5);
+        // 颜色计算器    
         colorFn = d3.interpolateLab("yellow", "red");
+        // 渐变弧
         let valuePath = d3.range(0, P * value, 0.01)
             .map((item, index, list) => {
                 if (list[index + 1]) {
@@ -70,10 +71,10 @@
                     return `<path d='${d}' fill='${colorFn(index/(list.length-1))}'/>`;
                 }
             }).slice(0, -1);
-
+        // 更新渐变弧
         document.querySelector('#valuePathG').innerHTML = valuePath;
 
-
+        // 再画一个数值弧做遮罩 来实现圆角     
         valueClipPathNode.setAttribute(
             'd',
             arc()
